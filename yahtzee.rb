@@ -150,7 +150,7 @@ $rollCounter = 0
             color: 'white'
     )
 
-    $infoText = Text.new('Welcome to YAHTZEE!',
+    $infoText = Text.new("Welcome to YAHTZEE!",
         x:44, y:380,
         style: 'bold',
         color: 'black',
@@ -326,17 +326,12 @@ $rollCounter = 0
     end
 
     def updateScores(diceArr, scoreArr, textArr)
-        numSum = 0
         for i in 0..5
             if(!scoreArr[i].getSelect)#Only change if that score has not been taken
                 scoreArr[i].setScore(upperSums(i+1, diceArr))
                 textArr[i].text = scoreArr[i].getScore
             end
         end
-        scoreArr[6].setScore(numSum)#Numtotal
-        textArr[6].text = numSum
-        textArr[6].color = 'blue'
-    
  
         if(!scoreArr[9].getSelect)
             scoreArr[9].setScore(threeKind(diceArr))
@@ -376,14 +371,18 @@ $rollCounter = 0
 
     def updateSums(diceArr, scoreArr, textArr)
         
-        upSum = 0
+        numSum = 0
+    
         for i in 0..5
             if(scoreArr[i].getSelect)
-                upSum += scoreArr[i].getScore
+                numSum += scoreArr[i].getScore
             end
         end
+        scoreArr[6].setScore(numSum)#Numtotal
+        textArr[6].text = numSum
+        textArr[6].color = 'blue'
 
-        if(upSum >= 65)#bonus
+        if(numSum >= 65)#bonus
 
             scoreArr[7].setScore(35)
             textArr[7].text = 35
@@ -392,9 +391,9 @@ $rollCounter = 0
             textArr[7].text = 0
             textArr[7].color = 'blue'
         end
-
-        scoreArr[8] = upSum + scoreArr[7].getScore #upper total
-        textArr[8].text = upSum + scoreArr[7].getScore
+        upSum = scoreArr[6].getScore + scoreArr[7].getScore
+        scoreArr[8] =  upSum #upper total
+        textArr[8].text = upSum
         textArr[8].color = 'blue'
         textArr[17].text = textArr[8].text
         textArr[17].color = 'blue'
