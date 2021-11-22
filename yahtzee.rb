@@ -2,8 +2,10 @@ require 'ruby2d'
 
 set title: 'Yahtzee', background: '#006400', width: 700, height: 500
 
-    class Dice 
+$turnCounter = 1
+$rollCounter = 0
 
+    class Dice 
         def initialize(x, y)
             @score = 0
             @held = false
@@ -23,9 +25,8 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
                     redSix: 11..11,
                     cycle: 0..5
                 })
-                @diceSprite.play animation: :cycle, loop: true
+            @diceSprite.play animation: :cycle, loop: true
         end
-
 
         public
 
@@ -89,6 +90,12 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
                 end
             end
         end
+
+        def startTurn
+            @diceSprite.play animation: :cycle, loop: true
+            @held = false
+            @score = 0
+        end
     end
 
     class ScoreCategory
@@ -136,6 +143,33 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
         textArray[i] = Text.new('', x:initialX, y: initialY, color: 'black')
         initialY+=22
     end
+
+    infoBox = Rectangle.new(
+            x:40, y:375,
+            width:400, height: 100,
+            color: 'white'
+    )
+
+    $infoText = Text.new('Welcome to YAHTZEE!',
+        x:44, y:380,
+        style: 'bold',
+        color: 'black',
+        size: 15
+    )
+
+    $turnText = Text.new('Turn: 1',
+        x:0, y:0,
+        color: 'white',
+        style: 'bold'
+    )
+
+    $rollText = Text.new('Rolls: 3',
+        x:380, y:0,
+        color: 'white',
+        style: 'bold'
+    )
+
+
     
     # Calculation Methods
     def valueArray(diceArray)
@@ -301,6 +335,7 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
         end
         scoreArr[6].setScore(numSum)#Numtotal
         textArr[6].text = numSum
+        textArr[6].color = 'blue'
     
  
         if(!scoreArr[9].getSelect)
@@ -337,12 +372,9 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
             scoreArr[15].setScore(chance(diceArr))
             textArr[15].text = scoreArr[15].getScore
         end
-
-
-
     end
 
-    def updateSums(scoreArr, textArr)
+    def updateSums(diceArr, scoreArr, textArr)
         
         upSum = 0
         for i in 0..5
@@ -382,8 +414,23 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
         scoreArr[18].setScore(sumTotal)
         textArr[18].text = scoreArr[18].getScore
         textArr[18].color = 'purple'
-    end
+        
+        
+        if($turnCounter == 13)
+            $infoText.text = "Game Over! Thanks for playing! End Score: #{scoreArr[18].getScore}"
+        end
 
+        
+        $turnCounter +=1
+        $rollCounter = 0
+        $rollText.text = "Rolls: 3"
+        $turnText.text = "Turn: #{$turnCounter}"
+
+        diceArr.each{|dice|
+            dice.startTurn
+        }
+    end
+*
 
     di = Array.new(5)
     
@@ -398,109 +445,120 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
     for i in 0..18 do
         categoryArray[i] = ScoreCategory.new()
     end
-
+    
     # key down
-    on :key_down do |event|
-        case event.key
-            # roll button = R key
-            when 'r'
-                for i in 0..4 do
-                    di[i].roll
-                end
-                updateScores(di, categoryArray, textArray)
-            # hold dice = corresponding number key
-            when '1'
-                di[0].hold
-            when '2'
-                di[1].hold
-            when '3'
-                di[2].hold
-            when '4'
-                di[3].hold
-            when '5'
-                di[4].hold
-            when 'a'
-                if(!categoryArray[0].getSelect)
-                    categoryArray[0].setTrue
-                    textArray[0].color = 'blue'
-                    updateSums(categoryArray, textArray)
-                end
-            when 's'
-                if(!categoryArray[1].getSelect)
-                    categoryArray[1].setTrue
-                    textArray[1].color = 'blue'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'd'
-                if(!categoryArray[2].getSelect)
-                    categoryArray[2].setTrue
-                    textArray[2].color = 'blue'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'f'
-                if(!categoryArray[3].getSelect)
-                    categoryArray[3].setTrue
-                    textArray[3].color = 'blue'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'g'
-                if(!categoryArray[4].getSelect)
-                    categoryArray[4].setTrue
-                    textArray[4].color = 'blue'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'h'
-                if(!categoryArray[5].getSelect)
-                    categoryArray[5].setTrue
-                    textArray[5].color = 'blue'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'z'
-                if(!categoryArray[9].getSelect)
-                    categoryArray[9].setTrue
-                    textArray[9].color = 'red'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'x'
-                if(!categoryArray[10].getSelect)
-                    categoryArray[10].setTrue
-                    textArray[10].color = 'red'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'c'
-                if(!categoryArray[11].getSelect)
-                    categoryArray[11].setTrue
-                    textArray[11].color = 'red'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'v'
-                if(!categoryArray[12].getSelect)
-                    categoryArray[12].setTrue
-                    textArray[12].color = 'red'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'b'
-                if(!categoryArray[13].getSelect)
-                    categoryArray[13].setTrue
-                    textArray[13].color = 'red'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'n'
-                if(!categoryArray[14].getSelect)
-                    categoryArray[14].setTrue
-                    textArray[14].color = 'red'
-                    updateSums(categoryArray, textArray)
-                end
-            when 'm'
-                if(!categoryArray[15].getSelect)
-                    categoryArray[15].setTrue
-                    textArray[15].color = 'red'
-                    updateSums(categoryArray, textArray)
-                end
-            
-        end
+ 
+        on :key_down do |event|
+            case event.key
+                # roll button = R key
+                when 'r'
+                    if($rollCounter != 3)
+                        for i in 0..4 do
+                            di[i].roll
+                        end
+                        updateScores(di, categoryArray, textArray)
+                        $rollCounter += 1
+                        $rollText.text = "Rolls: #{3 - $rollCounter}"
+                    end
+                # hold dice = corresponding number key
+                when '1'
+                    if($rollCounter != 0)
+                        di[0].hold
+                    end
+                when '2'
+                    if($rollCounter != 0)
+                        di[1].hold
+                    end
+                when '3'
+                    if($rollCounter != 0)
+                        di[2].hold
+                    end
+                when '4'
+                    if($rollCounter != 0)
+                        di[3].hold
+                    end
+                when '5'
+                    if($rollCounter != 0)
+                        di[4].hold
+                    end
+                when 'a'
+                    if(!categoryArray[0].getSelect && $rollCounter != 0)
+                        categoryArray[0].setTrue
+                        textArray[0].color = 'blue'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 's'
+                    if(!categoryArray[1].getSelect && $rollCounter != 0)
+                        categoryArray[1].setTrue
+                        textArray[1].color = 'blue'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'd'
+                    if(!categoryArray[2].getSelect && $rollCounter != 0)
+                        categoryArray[2].setTrue
+                        textArray[2].color = 'blue'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'f'
+                    if(!categoryArray[3].getSelect && $rollCounter != 0)
+                        categoryArray[3].setTrue
+                        textArray[3].color = 'blue'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'g'
+                    if(!categoryArray[4].getSelect && $rollCounter != 0)
+                        categoryArray[4].setTrue
+                        textArray[4].color = 'blue'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'h'
+                    if(!categoryArray[5].getSelect && $rollCounter != 0)
+                        categoryArray[5].setTrue
+                        textArray[5].color = 'blue'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'z'
+                    if(!categoryArray[9].getSelect && $rollCounter != 0)
+                        categoryArray[9].setTrue
+                        textArray[9].color = 'red'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'x'
+                    if(!categoryArray[10].getSelect && $rollCounter != 0)
+                        categoryArray[10].setTrue
+                        textArray[10].color = 'red'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'c'
+                    if(!categoryArray[11].getSelect && $rollCounter != 0)
+                        categoryArray[11].setTrue
+                        textArray[11].color = 'red'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'v'
+                    if(!categoryArray[12].getSelect && $rollCounter != 0)
+                        categoryArray[12].setTrue
+                        textArray[12].color = 'red'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'b'
+                    if(!categoryArray[13].getSelect && $rollCounter != 0)
+                        categoryArray[13].setTrue
+                        textArray[13].color = 'red'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'n'
+                    if(!categoryArray[14].getSelect && $rollCounter != 0)
+                        categoryArray[14].setTrue
+                        textArray[14].color = 'red'
+                        updateSums(di, categoryArray, textArray)
+                    end
+                when 'm'
+                    if(!categoryArray[15].getSelect && $rollCounter != 0)
+                        categoryArray[15].setTrue
+                        textArray[15].color = 'red'
+                        updateSums(di, categoryArray, textArray)
+                    end     
+            end
     end
-
-
-
 show
