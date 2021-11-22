@@ -157,6 +157,27 @@ $rollCounter = 0
         size: 15
     )
 
+    $controlText = Text.new('Press R to re/roll',
+        x:44, y:400,
+        style: 'bold',
+        color: 'black',
+        size: 15
+    )
+
+    $controlTextTwo = Text.new('Press the corresponding key on the score table to ',
+        x:44, y:420,
+        style: 'bold',
+        color: 'black',
+        size: 15
+    )
+
+    $controlTextThree = Text.new('commit and end your turn',
+        x:44, y:440,
+        style: 'bold',
+        color: 'black',
+        size: 15
+    )
+
     $turnText = Text.new('Turn: 1',
         x:0, y:0,
         color: 'white',
@@ -416,6 +437,9 @@ $rollCounter = 0
         
         
         if($turnCounter == 13)
+            $controlText.text = ''
+            $controlTextTwo.text = ''
+            $controlTextThree.text = ''
             $infoText.text = "Game Over! Thanks for playing! End Score: #{scoreArr[18].getScore}"
         end
 
