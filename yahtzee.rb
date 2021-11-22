@@ -29,6 +29,10 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
 
         public
 
+        def getScore  
+            return @score
+        end
+
         def roll 
             if(!@held)
                 @score = rand(6) + 1    # random number between 0-5, add 1, 1-6
@@ -47,7 +51,6 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
                         @diceSprite.play animation: :six, loop: true
                 end
             end
-            
         end
 
         def hold
@@ -86,39 +89,304 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
                 end
             end
         end
-        def getScore
-            
-            return @score
-        end
-
     end
 
-    class Score
-        def initialize()
-            @val = 0
+    class ScoreCategory
+        @calculatedScore
+        @selected
+
+        def initialize
+            @calculatedScore = -1
             @selected = false
         end
 
-        def setVal(i)
-            @val = i
+        def setScore(inputScore)
+            @calculatedScore = inputScore
         end
-        
-        def select
+
+        def getScore
+            return @calculatedScore
+        end
+
+        def setTrue
             @selected = true
         end
 
-        def getSelected
+        def getSelect
             return @selected
         end
+    end
+        
+    #Table UI
+    tableImage = Image.new('scoreTable.png',
+        x:480, y:0
+        )
+    
+    textArray = Array.new(19)
 
-        def getVal
-            return @val
+    #Generates Text Objects in textArray to display scores
+
+    initialX = 635
+    initialY = 26
+    for i in 0..19
+        if (i == 9)
+            initialY = 274
         end
+
+        textArray[i] = Text.new('', x:initialX, y: initialY, color: 'black')
+        initialY+=22
+    end
+    
+    # Calculation Methods
+    def valueArray(diceArray)
+        array = Array.new(5)
+        for i in 0..4
+            array[i] = diceArray[i].getScore
+        end  
+        return array
     end
 
-    turn = 1
-    rerolls = 2
+    def upperSums(targetNum, diceArray)
+        scoreArray = valueArray(diceArray)
+        score = 0
+        scoreArray.each { |dice|
+        
+            if (dice == targetNum)
+                score += targetNum
+            end
+        }
+        return score
+    end
+
+    def threeKind(diceArray)
+        scoreArray = valueArray(diceArray)
+        score = 0
+        counter = scoreArray.tally
+        threeCheck = false
+        counter.each {|key, value|
+                if(value == 3 || value == 4 || value == 5)
+                    threeCheck = true
+                end
+        }
+        if(threeCheck)  
+            scoreArray.each {|dice|
+                score += dice
+            }
+        end
+        return score
+    end
+
+    def fourKind(diceArray)
+        scoreArray = valueArray(diceArray)
+        score = 0
+        counter = scoreArray.tally
+        fourCheck = false
+        counter.each {|key, value|
+                if(value == 4 || value == 5)
+                    fourCheck = true
+                end
+        }
+        
+        if(fourCheck)
+            scoreArray.each {|dice|
+                score += dice
+            }
+        end
+        return score
+    end
+
+    def fullHouse(diceArray)
+        scoreArray = valueArray(diceArray)
+        score = 0
+        counter = scoreArray.tally
+        
+        houseCheckThree = false
+        houseCheckTwo = false
+        counter.each {|key, value|
+                if(value == 2)
+                    houseCheckTwo = true
+                elsif(value == 3)
+                    houseCheckThree = true
+                end
+        }
+
+        if(!(houseCheckThree && houseCheckTwo))
+            score = 0
+        
+        else
+            score = 25
+        end
+
+        return score
+    end
+
+    def smallStraight(diceArray)
+        scoreArray = valueArray(diceArray)
+        score = 0
+        tempArray = scoreArray.sort 
+        currentNum = -1
+        straightCounter = 0
+        
+        for i in 0..2
+            if (tempArray[i] == tempArray[i + 1] - 1)
+                straightCounter+=1
+            end
+        end
+
+        if(straightCounter == 3)
+            score = 30
+        end
+
+        tempArray = tempArray.reverse
+        straightCounter = 0
+
+        if(score != 30)
+                for x in 0..2
+                    if (tempArray[x] == tempArray[x + 1] + 1)
+                        straightCounter+=1
+                    end
+                end
+        end
+        if(straightCounter == 3)
+            score = 30
+        end
+        return score
+    end
+
+    def largeStraight(diceArray)
+        scoreArray = valueArray(diceArray)
+        score = 0
+        tempArray = scoreArray.sort
+        straightCounter = 0
+        for i in 0..3
+            if(tempArray[i] == tempArray[i + 1] - 1)
+                straightCounter +=1
+            end
+        end
+
+        if(straightCounter == 4)
+            score = 40
+        end
+        return score
+    end
+
+    def yahtzee(diceArray)
+        scoreArray = valueArray(diceArray)
+        score = 0
+        counter = scoreArray.tally
+        counter.each {|key, value|
+                if(value == 5)
+                    score = 50
+                end
+        }
+        return score
+    end
+
+    def chance(diceArray)
+        scoreArray = valueArray(diceArray)
+        score = 0
+        scoreArray.each() {|dice|
+            score+= dice
+        }
+        return score;
+    end
+
+    def updateScores(diceArr, scoreArr, textArr)
+        numSum = 0
+        for i in 0..5
+            if(!scoreArr[i].getSelect)#Only change if that score has not been taken
+                scoreArr[i].setScore(upperSums(i+1, diceArr))
+                textArr[i].text = scoreArr[i].getScore
+            end
+        end
+        scoreArr[6].setScore(numSum)#Numtotal
+        textArr[6].text = numSum
+    
+ 
+        if(!scoreArr[9].getSelect)
+            scoreArr[9].setScore(threeKind(diceArr))
+            textArr[9].text = scoreArr[9].getScore
+        end
+
+        if(!scoreArr[10].getSelect)
+            scoreArr[10].setScore(fourKind(diceArr))
+            textArr[10].text = scoreArr[10].getScore
+        end
+
+        if(!scoreArr[11].getSelect)
+            scoreArr[11].setScore(yahtzee(diceArr))
+            textArr[11].text = scoreArr[11].getScore
+        end
+
+        if(!scoreArr[12].getSelect)
+            scoreArr[12].setScore(fullHouse(diceArr))
+            textArr[12].text = scoreArr[12].getScore
+        end
+
+        if(!scoreArr[13].getSelect)
+            scoreArr[13].setScore(smallStraight(diceArr))
+            textArr[13].text = scoreArr[13].getScore
+        end
+
+        if(!scoreArr[14].getSelect)
+            scoreArr[14].setScore(largeStraight(diceArr))
+            textArr[14].text = scoreArr[14].getScore
+        end
+
+        if(!scoreArr[15].getSelect)
+            scoreArr[15].setScore(chance(diceArr))
+            textArr[15].text = scoreArr[15].getScore
+        end
+
+
+
+    end
+
+    def updateSums(scoreArr, textArr)
+        
+        upSum = 0
+        for i in 0..5
+            if(scoreArr[i].getSelect)
+                upSum += scoreArr[i].getScore
+            end
+        end
+
+        if(upSum >= 65)#bonus
+
+            scoreArr[7].setScore(35)
+            textArr[7].text = 35
+        else 
+            scoreArr[7].setScore(0)
+            textArr[7].text = 0
+            textArr[7].color = 'blue'
+        end
+
+        scoreArr[8] = upSum + scoreArr[7].getScore #upper total
+        textArr[8].text = upSum + scoreArr[7].getScore
+        textArr[8].color = 'blue'
+        textArr[17].text = textArr[8].text
+        textArr[17].color = 'blue'
+
+        lowSum = 0   
+        for i in 9..15
+            if(scoreArr[i].getSelect)
+                lowSum += scoreArr[i].getScore
+            end
+        end
+        scoreArr[16].setScore(lowSum)
+        textArr[16].text = scoreArr[16].getScore
+        textArr[16].color = 'red'
+
+        sumTotal = lowSum + upSum
+
+        scoreArr[18].setScore(sumTotal)
+        textArr[18].text = scoreArr[18].getScore
+        textArr[18].color = 'purple'
+    end
+
+
     di = Array.new(5)
+    
     # initiallize di with separate coordinates
     di[0] = Dice.new(50, 50)
     di[1] = Dice.new(100, 50)
@@ -126,25 +394,20 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
     di[3] = Dice.new(200,50)
     di[4] = Dice.new(250, 50)
 
-    sc = Array.new(18)
-    for i in 0..17 do
-        sc[i] = Score.new()
+    categoryArray = Array.new(19)
+    for i in 0..18 do
+        categoryArray[i] = ScoreCategory.new()
+    end
+
     # key down
     on :key_down do |event|
         case event.key
             # roll button = R key
             when 'r'
-                if (rerolls > 0)
-                    for i in 0..4 do
-                        di[i].roll
-                    end
-                    rerolls -= 1
+                for i in 0..4 do
+                    di[i].roll
                 end
-                for i in 0..16 do
-                    chooseCalc(i, di, scoreArr)
-                end
-            
-
+                updateScores(di, categoryArray, textArray)
             # hold dice = corresponding number key
             when '1'
                 di[0].hold
@@ -157,185 +420,87 @@ set title: 'Yahtzee', background: '#006400', width: 700, height: 500
             when '5'
                 di[4].hold
             when 'a'
-                chooseCalc(0, di, sc)
-                if(!sc[0].getSelected)
-                    nextTurn()
+                if(!categoryArray[0].getSelect)
+                    categoryArray[0].setTrue
+                    textArray[0].color = 'blue'
+                    updateSums(categoryArray, textArray)
                 end
-                
-        end
-    end
-    
-    def chooseCalc(choice, die, scoreArr)
-        if(!sc[choice].getSelected)
-            case choice
-                when '0'#aces
-                    sc[0].setVal(upperSums(1, die))
-                when '1'#twos
-                    sc[1].setVal(upperSums(2, die))
-                when '2'#threes
-                    sc[2].setVal(upperSums(3, die))
-                when '3'#fours
-                    sc[3].setVal(upperSums(4, die))
-                when '4'#fives
-                    sc[4].setVal(upperSums(5, die))
-                when '5'#sixes
-                    sc[5].setVal(upperSums(6, die))
-                when '6'#Num total
-                    sc[6].setVal(numTotal(sc))
-                when '7'#Bonus
-                    if(sc[6].getVal >= 65)
-                        sc[7].setVal(35)
-                    else
-                        sc[7].setVal(0)
-                    end
-                when '8'#uppertotal
-                    sc[8].setVal(sc[6].getVal + sc[7].getVal)
-                when '9'#three of a kind
-                    sc[9].setVal(threeKind(die))
-                when '10'#four of a kind
-                    sc[10].setVal(fourKind(die))
-                when '11'#Yachzee - five of a kind
-                    sc[11].setVal(yahtzee(die))
-                when '12'# Full house
-                    sc[12].setVal(fullHouse(die))
-                when '13'#straight of 4
-                    sc.[13].setVal(smallStraight(die))
-                when '14'#straight of 5
-                    sc.[14].setVal(largeStraight(die))
-                when '15'#chance
-                    sc.[15].setVal(chance(die))
-                when '16'#low total
-                    sc.[16].setVal(lowTotal(sc))
-                when '17'#Grand total
-                    sc.[17].setVal(sc[16].getVal + sc[8].getVal)
-            end
+            when 's'
+                if(!categoryArray[1].getSelect)
+                    categoryArray[1].setTrue
+                    textArray[1].color = 'blue'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'd'
+                if(!categoryArray[2].getSelect)
+                    categoryArray[2].setTrue
+                    textArray[2].color = 'blue'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'f'
+                if(!categoryArray[3].getSelect)
+                    categoryArray[3].setTrue
+                    textArray[3].color = 'blue'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'g'
+                if(!categoryArray[4].getSelect)
+                    categoryArray[4].setTrue
+                    textArray[4].color = 'blue'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'h'
+                if(!categoryArray[5].getSelect)
+                    categoryArray[5].setTrue
+                    textArray[5].color = 'blue'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'z'
+                if(!categoryArray[9].getSelect)
+                    categoryArray[9].setTrue
+                    textArray[9].color = 'red'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'x'
+                if(!categoryArray[10].getSelect)
+                    categoryArray[10].setTrue
+                    textArray[10].color = 'red'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'c'
+                if(!categoryArray[11].getSelect)
+                    categoryArray[11].setTrue
+                    textArray[11].color = 'red'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'v'
+                if(!categoryArray[12].getSelect)
+                    categoryArray[12].setTrue
+                    textArray[12].color = 'red'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'b'
+                if(!categoryArray[13].getSelect)
+                    categoryArray[13].setTrue
+                    textArray[13].color = 'red'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'n'
+                if(!categoryArray[14].getSelect)
+                    categoryArray[14].setTrue
+                    textArray[14].color = 'red'
+                    updateSums(categoryArray, textArray)
+                end
+            when 'm'
+                if(!categoryArray[15].getSelect)
+                    categoryArray[15].setTrue
+                    textArray[15].color = 'red'
+                    updateSums(categoryArray, textArray)
+                end
+            
         end
     end
 
-    def nextTurn()
-        if(turn != 13)
-            turn += 1
-            rerolls = 2
-        else
-            sc[17] = grandTotal(di)
-        end
-    end
 
-    def numTotal(scoreArr)
-        sum = 0
-        for i in 0..5
-            sum += scoreArr[i].getVal
-        end
-    end
 
-    def lowTotal(scoreArr)
-    sum = 0
-        for i in 9..15
-            sum += scoreArr[i].getVal
-        end
-    end
-    
-    #Table UI
-    tableImage = Image.new('scoreTable.png',
-        x:480, y:0
-        )
-    
-        acesText = Text.new('',
-            x: 635, y: 26,
-            color: 'black'
-        )
-    
-        twosText = Text.new('',
-            x: 635, y: 48,
-            color: 'black'
-        )
-    
-        
-        threesText = Text.new('',
-            x: 635, y: 70,
-            color: 'black'
-        )
-        
-        foursText = Text.new('',
-            x: 635, y: 92,
-            color: 'black'
-        )
-    
-        
-        fivesText = Text.new('',
-            x: 635, y: 114,
-            color: 'black'
-        )
-    
-        
-        sixesText = Text.new('',
-            x: 635, y: 136,
-            color: 'black'
-        )
-    
-        upperTotalScoreText = Text.new('',
-            x: 635, y: 158,
-            color: 'black'
-        )
-        
-        bonusText = Text.new('',
-            x: 635, y: 180,
-            color: 'black'
-        )
-    
-        upperTotalText = Text.new('',
-            x: 635, y: 204,
-            color: 'black'
-        )
-    
-        
-        threeKindText = Text.new('',
-            x: 635, y: 272,
-            color: 'black'
-        )
-    
-        fourKindText = Text.new('',
-            x: 635, y: 294,
-            color: 'black'
-        )
-    
-        fiveKindText = Text.new('',
-            x: 635, y: 316,
-            color: 'black'
-        )
-    
-        fullHouseText = Text.new('',
-            x: 635, y: 338,
-            color: 'black'
-        )
-    
-        fourStraightText = Text.new('',
-            x: 635, y: 360,
-            color: 'black'
-        )
-    
-        fiveStraightText = Text.new('',
-            x: 635, y: 382,
-            color: 'black'
-        )
-    
-        chanceText = Text.new('',
-            x: 635, y: 404,
-            color: 'black'
-        )
-    
-        grandLowerText = Text.new('',
-            x: 635, y: 430,
-            color: 'black'
-        )
-    
-        grandUpperText = Text.new('',
-            x: 635, y: 452,
-            color: 'black'
-        )
-    
-        grandTotalText = Text.new('',
-            x: 635, y: 474,
-            color: 'black'
-        )
 show
