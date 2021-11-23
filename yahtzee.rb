@@ -164,15 +164,22 @@ $rollCounter = 0
         size: 15
     )
 
-    $controlTextTwo = Text.new('Press the corresponding key on the score table to ',
+    $controlTextTwo = Text.new('Press 1-5 to keep that dice\'s value between rerolls',
         x:44, y:420,
         style: 'bold',
         color: 'black',
         size: 15
     )
 
-    $controlTextThree = Text.new('commit and end your turn',
+    $controlTextThree = Text.new('Press the corresponding key on the score table to ',
         x:44, y:440,
+        style: 'bold',
+        color: 'black',
+        size: 15
+    )
+
+    $controlTextFour = Text.new('commit and end your turn',
+        x:44, y:460,
         style: 'bold',
         color: 'black',
         size: 15
