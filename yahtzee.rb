@@ -146,7 +146,7 @@ $rollCounter = 0
 
     infoBox = Rectangle.new(
             x:40, y:375,
-            width:400, height: 100,
+            width:400, height: 110,
             color: 'white'
     )
 
@@ -157,7 +157,7 @@ $rollCounter = 0
         size: 15
     )
 
-    $controlText = Text.new('Press R to re/roll',
+    $controlText = Text.new('Press R to roll/reroll',
         x:44, y:400,
         style: 'bold',
         color: 'black',
@@ -171,14 +171,14 @@ $rollCounter = 0
         size: 15
     )
 
-    $controlTextThree = Text.new('Press the corresponding key on the score table to ',
+    $controlTextThree = Text.new('Press the key in parenthesis on the score table to ',
         x:44, y:440,
         style: 'bold',
         color: 'black',
         size: 15
     )
 
-    $controlTextFour = Text.new('commit and end your turn',
+    $controlTextFour = Text.new('commit to that category and end your turn',
         x:44, y:460,
         style: 'bold',
         color: 'black',
@@ -444,21 +444,25 @@ $rollCounter = 0
         
         
         if($turnCounter == 13)
-            $controlText.text = ''
+            $infoText.text = "Game Over! Thanks for playing! "
+            $controlText.text = "End Score: #{scoreArr[18].getScore}"
             $controlTextTwo.text = ''
             $controlTextThree.text = ''
-            $infoText.text = "Game Over! Thanks for playing! End Score: #{scoreArr[18].getScore}"
+            $controlTextFour.text = ''
+            $turnText.text = "Game Over"
+            $rollCounter = 3
+            $rollText.text = ''
+        else
+            $turnCounter +=1
+            $rollCounter = 0
+            $rollText.text = "Rolls: 3"
+            $turnText.text = "Turn: #{$turnCounter}"
+    
+            diceArr.each{|dice|
+                dice.startTurn
+            }
         end
 
-        
-        $turnCounter +=1
-        $rollCounter = 0
-        $rollText.text = "Rolls: 3"
-        $turnText.text = "Turn: #{$turnCounter}"
-
-        diceArr.each{|dice|
-            dice.startTurn
-        }
     end
 *
 
@@ -492,23 +496,23 @@ $rollCounter = 0
                     end
                 # hold dice = corresponding number key
                 when '1'
-                    if($rollCounter != 0)
+                    if($rollCounter != 0 && $turnCounter != 13)
                         di[0].hold
                     end
                 when '2'
-                    if($rollCounter != 0)
+                    if($rollCounter != 0 && $turnCounter != 13)
                         di[1].hold
                     end
                 when '3'
-                    if($rollCounter != 0)
+                    if($rollCounter != 0 && $turnCounter != 13)
                         di[2].hold
                     end
                 when '4'
-                    if($rollCounter != 0)
+                    if($rollCounter != 0 && $turnCounter != 13)
                         di[3].hold
                     end
                 when '5'
-                    if($rollCounter != 0)
+                    if($rollCounter != 0 && $turnCounter != 13)
                         di[4].hold
                     end
                 when 'a'
