@@ -444,14 +444,14 @@ $rollCounter = 0
         
         
         if($turnCounter == 13)
+            $turnText.text = "Game Over"
+            $turnCounter = 14
+            $rollText.text = ''
             $infoText.text = "Game Over! Thanks for playing! "
             $controlText.text = "End Score: #{scoreArr[18].getScore}"
             $controlTextTwo.text = ''
             $controlTextThree.text = ''
             $controlTextFour.text = ''
-            $turnText.text = "Game Over"
-            $rollCounter = 3
-            $rollText.text = ''
         else
             $turnCounter +=1
             $rollCounter = 0
@@ -486,7 +486,7 @@ $rollCounter = 0
             case event.key
                 # roll button = R key
                 when 'r'
-                    if($rollCounter != 3)
+                    if($rollCounter != 3 && $turnCounter != 14)
                         for i in 0..4 do
                             di[i].roll
                         end
@@ -496,23 +496,23 @@ $rollCounter = 0
                     end
                 # hold dice = corresponding number key
                 when '1'
-                    if($rollCounter != 0 && $turnCounter != 13)
+                    if($rollCounter != 0 && $turnCounter != 14)
                         di[0].hold
                     end
                 when '2'
-                    if($rollCounter != 0 && $turnCounter != 13)
+                    if($rollCounter != 0 && $turnCounter != 14)
                         di[1].hold
                     end
                 when '3'
-                    if($rollCounter != 0 && $turnCounter != 13)
+                    if($rollCounter != 0 && $turnCounter != 14)
                         di[2].hold
                     end
                 when '4'
-                    if($rollCounter != 0 && $turnCounter != 13)
+                    if($rollCounter != 0 && $turnCounter != 14)
                         di[3].hold
                     end
                 when '5'
-                    if($rollCounter != 0 && $turnCounter != 13)
+                    if($rollCounter != 0 && $turnCounter != 14)
                         di[4].hold
                     end
                 when 'a'
